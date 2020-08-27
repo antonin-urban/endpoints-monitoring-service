@@ -23,7 +23,7 @@ namespace EndpointsMonitoringService.Controllers
             _logger = logger;
 
 
-            logger.LogInformation("Hi");
+            logger.LogDebug("Hi");
         }
 
         [HttpGet]

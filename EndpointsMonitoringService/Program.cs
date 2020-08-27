@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace EndpointsMonitoringService
@@ -24,6 +23,7 @@ namespace EndpointsMonitoringService
              .ReadFrom.Configuration(configuration)
             .CreateLogger();
 
+            
 
             try
             {
@@ -33,7 +33,7 @@ namespace EndpointsMonitoringService
             }
             catch (Exception ex)
             {
-                Log.ForContext(typeof(Program)).Fatal(ex, "APP TERMINATED UNEXPECTEDLY");
+                Log.ForContext(typeof(Program)).Error(ex, "APP TERMINATED UNEXPECTEDLY");
                 
             }
             finally

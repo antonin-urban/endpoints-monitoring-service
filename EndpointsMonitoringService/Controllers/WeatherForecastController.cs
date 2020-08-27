@@ -21,6 +21,9 @@ namespace EndpointsMonitoringService.Controllers
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
+
+
+            logger.LogInformation("Hi");
         }
 
         [HttpGet]

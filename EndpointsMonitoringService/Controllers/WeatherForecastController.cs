@@ -22,8 +22,6 @@ namespace EndpointsMonitoringService.Controllers
         {
             _logger = logger;
 
-
-            logger.LogInformation("Test message");
         }
 
         [HttpGet]

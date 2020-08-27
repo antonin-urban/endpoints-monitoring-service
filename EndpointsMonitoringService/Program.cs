@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,22 @@ namespace EndpointsMonitoringService
              .ReadFrom.Configuration(configuration)
             .CreateLogger();
 
-            CreateHostBuilder(args).Build().Run();
+
+            try
+            {
+                Log.ForContext(typeof(Program)).Information("APP STARTED");
+                CreateHostBuilder(args).Build().Run();
+                
+            }
+            catch (Exception ex)
+            {
+                Log.ForContext(typeof(Program)).Fatal(ex, "APP TERMINATED UNEXPECTEDLY");
+                
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

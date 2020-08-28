@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -15,26 +16,29 @@ namespace EndpointsMonitoringService
         public static void Main(string[] args)
         {
 
+
+          
             var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
             .Build();
 
             Log.Logger = new LoggerConfiguration()
-             .ReadFrom.Configuration(configuration)
+            .ReadFrom.Configuration(configuration)
             .CreateLogger();
 
-            
+
 
             try
             {
                 Log.ForContext(typeof(Program)).Information("APP STARTED");
                 CreateHostBuilder(args).Build().Run();
-                
+
             }
             catch (Exception ex)
             {
                 Log.ForContext(typeof(Program)).Error(ex, "APP TERMINATED UNEXPECTEDLY");
-                
+
             }
             finally
             {

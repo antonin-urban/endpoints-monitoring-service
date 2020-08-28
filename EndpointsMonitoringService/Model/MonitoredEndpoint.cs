@@ -12,7 +12,7 @@ namespace EndpointsMonitoringService.Model
         public string Url { get; set; }
         public DateTime DateOfCreation { get; set; }
         public DateTime DateOfLastCheck { get; set; }
-        public int MonitoredInterval { get; set; } //ms
+        public int MonitoredInterval { get; set; } //s
         public int UserForeignKey { get; set; }
         public User Owner { get; set; }
 

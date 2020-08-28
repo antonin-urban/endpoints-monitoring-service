@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EndpointsMonitoringService.Model;
@@ -39,6 +40,15 @@ namespace EndpointsMonitoringService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.Development.json")
+                .Build();
+
+                Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
             }
 
             app.UseHttpsRedirection();
@@ -53,21 +63,26 @@ namespace EndpointsMonitoringService
             });
 
 
+
             try
             {
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
                 {
                     var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                    
-                    context.Database.EnsureDeleted();
-                    logger.LogInformation("Database EnsureDeleted done");
+
+
+                    if (env.IsDevelopment())
+                    {
+                        context.Database.EnsureDeleted();
+                        logger.LogInformation("Database EnsureDeleted done");
+                    }
                     context.Database.EnsureCreated();
                     logger.LogInformation("Database EnsureCreated done");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                logger.LogError(ex, "ERROR RECREATING DATABASE");
+                logger.LogError(ex, "ERROR ENSURE CREATED DATABASE");
                 throw ex;
             }
         }

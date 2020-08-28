@@ -35,7 +35,7 @@ namespace EndpointsMonitoringService
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -49,6 +49,9 @@ namespace EndpointsMonitoringService
                 Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
+
+
+
             }
 
             app.UseHttpsRedirection();
@@ -63,26 +66,29 @@ namespace EndpointsMonitoringService
             });
 
 
-
             try
             {
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
                 {
-                    var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-
-
+                    var dbContext = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                    var loggerSeed = serviceScope.ServiceProvider.GetRequiredService<ILogger<DatabaseContextSeed>>();
+                    
                     if (env.IsDevelopment())
                     {
-                        context.Database.EnsureDeleted();
-                        logger.LogInformation("Database EnsureDeleted done");
+                        dbContext.Database.EnsureDeleted();
+                        Log.Logger.ForContext(typeof(Program)).Information("Database EnsureDeleted done");
                     }
-                    context.Database.EnsureCreated();
-                    logger.LogInformation("Database EnsureCreated done");
+                    dbContext.Database.EnsureCreated();
+                    Log.Logger.ForContext(typeof(Program)).Information("Database EnsureCreated done");
+
+                    DatabaseContextSeed dbSeed = new DatabaseContextSeed(loggerSeed, dbContext);
+                    dbSeed.SeedUsers();
+
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "ERROR ENSURE CREATED DATABASE");
+                Log.Logger.ForContext(typeof(Program)).Error(ex, "ERROR ENSURE CREATED DATABASE");
                 throw ex;
             }
         }

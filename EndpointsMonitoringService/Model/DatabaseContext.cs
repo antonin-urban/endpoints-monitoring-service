@@ -18,7 +18,7 @@ namespace EndpointsMonitoringService.Model
         public DatabaseContext(DbContextOptions<DatabaseContext> options, ILogger<DatabaseContext> logger) : base(options)
         {
             _logger = logger;
-            logger.LogInformation("DatabaseContext constructor");
+            logger.LogInformation("DatabaseContext constructor call");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -4,9 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using EndpointsMonitoringService.Model;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace EndpointsMonitoringService
@@ -17,7 +20,7 @@ namespace EndpointsMonitoringService
         {
 
 
-          
+
             var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
@@ -29,11 +32,13 @@ namespace EndpointsMonitoringService
 
 
 
+
+
             try
             {
-                Log.ForContext(typeof(Program)).Information("APP STARTED");
-                CreateHostBuilder(args).Build().Run();
-
+                var host = CreateHostBuilder(args).Build();
+                Log.Logger.ForContext(typeof(Program)).Information("APP STARTED");
+                host.Run();
             }
             catch (Exception ex)
             {

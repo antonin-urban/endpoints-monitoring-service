@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace EndpointsMonitoringService.Model
 {
     public class MonitoredEndpoint
     {
-
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
         public string Url { get; set; }
@@ -13,6 +16,7 @@ namespace EndpointsMonitoringService.Model
         public int UserForeignKey { get; set; }
         public User Owner { get; set; }
 
+        public List<MonitoringResult> Results { get; set; }
 
         public MonitoredEndpoint()
         {

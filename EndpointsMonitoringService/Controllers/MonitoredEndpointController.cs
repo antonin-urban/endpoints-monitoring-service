@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EndpointsMonitoringService.Model;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EndpointsMonitoringService.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MonitoredEndpointController : ControllerBase

@@ -9,15 +9,15 @@ namespace EndpointsMonitoringService.Model
     public class DatabaseContextSeed
     {
         private readonly ILogger<DatabaseContextSeed> _logger;
-        private readonly DatabaseContext _dbcontext;
+        private readonly DatabaseContext _databaseContext;
 
 
 
-        public DatabaseContextSeed(ILogger<DatabaseContextSeed> logger,DatabaseContext dbcontext)
+        public DatabaseContextSeed(ILoggerFactory logger,DatabaseContext databaseContext)
         {
-            _logger = logger;
-            _dbcontext = dbcontext;
-            logger.LogInformation("DatabaseContextSeed constructor call");
+            _logger = logger.CreateLogger<DatabaseContextSeed>();
+            _databaseContext = databaseContext;
+            _logger.LogInformation("DatabaseContextSeed constructor call");
         }
 
         public void SeedUsers()
@@ -33,14 +33,14 @@ namespace EndpointsMonitoringService.Model
                 };
 
 
-                if(!_dbcontext.User.Any(
+                if(!_databaseContext.User.Any(
                     x=>x.UserName == user1.UserName
                     && x.Email == user1.Email
                     && x.AccessToken == user1.AccessToken
                 ))
                 {
-                    _dbcontext.Add(user1);
-                    _dbcontext.SaveChangesAsync();
+                    _databaseContext.Add(user1);
+                    _databaseContext.SaveChangesAsync();
                 }
 
 
@@ -53,14 +53,14 @@ namespace EndpointsMonitoringService.Model
                 };
 
 
-                if (!_dbcontext.User.Any(
+                if (!_databaseContext.User.Any(
                    x => x.UserName == user1.UserName
                    && x.Email == user1.Email
                    && x.AccessToken == user1.AccessToken
                ))
                 {
-                    _dbcontext.Add(user1);
-                    _dbcontext.SaveChangesAsync();
+                    _databaseContext.Add(user1);
+                    _databaseContext.SaveChangesAsync();
                 }
 
 

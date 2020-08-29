@@ -15,10 +15,10 @@ namespace EndpointsMonitoringService.Model
         public virtual DbSet<MonitoringResult> MonitoringResult { get; set; }
 
 
-        public DatabaseContext(DbContextOptions<DatabaseContext> options, ILogger<DatabaseContext> logger) : base(options)
+        public DatabaseContext(DbContextOptions<DatabaseContext> options, ILoggerFactory logger) : base(options)
         {
-            _logger = logger;
-            logger.LogInformation("DatabaseContext constructor call");
+            _logger = logger.CreateLogger<DatabaseContext>();
+            _logger.LogInformation("DatabaseContext constructor call");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EndpointsMonitoringService.Handlers;
 using EndpointsMonitoringService.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -19,6 +21,9 @@ namespace EndpointsMonitoringService
 {
     public class Startup
     {
+
+        
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -32,11 +37,15 @@ namespace EndpointsMonitoringService
             services.AddDbContext<DatabaseContext>(options =>
             options.UseMySQL(Configuration.GetConnectionString("EndpointsMonitoringServiceDatabase")));
             services.AddControllers();
+
+            services.AddAuthentication("Basic Bearer Token Auhtentication")
+            .AddScheme<TokenAuthenticationOptions, TokenAuthenticationHandler>("Basic Bearer Token Auhtentication", null);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory logger)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -58,6 +67,7 @@ namespace EndpointsMonitoringService
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -71,7 +81,6 @@ namespace EndpointsMonitoringService
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
                 {
                     var dbContext = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                    var loggerSeed = serviceScope.ServiceProvider.GetRequiredService<ILogger<DatabaseContextSeed>>();
                     
                     if (env.IsDevelopment())
                     {
@@ -81,7 +90,7 @@ namespace EndpointsMonitoringService
                     dbContext.Database.EnsureCreated();
                     Log.Logger.ForContext(typeof(Program)).Information("Database EnsureCreated done");
 
-                    DatabaseContextSeed dbSeed = new DatabaseContextSeed(loggerSeed, dbContext);
+                    DatabaseContextSeed dbSeed = new DatabaseContextSeed(logger, dbContext);
                     dbSeed.SeedUsers();
 
                 }

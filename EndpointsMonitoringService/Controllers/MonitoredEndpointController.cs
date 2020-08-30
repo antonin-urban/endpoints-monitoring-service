@@ -136,6 +136,7 @@ namespace EndpointsMonitoringService.Controllers
 
             cleanMonitoredEndpoint.Name = deserializedMonitoredEndpoint.Name;
             cleanMonitoredEndpoint.Url = deserializedMonitoredEndpoint.Url;
+            cleanMonitoredEndpoint.MonitoredInterval = deserializedMonitoredEndpoint.MonitoredInterval;
             return cleanMonitoredEndpoint;
         }
 

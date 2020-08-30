@@ -43,7 +43,7 @@ namespace EndpointsMonitoringService.Model
                 entity.Property(e => e.Url).HasColumnName("url").IsRequired();
                 entity.Property(e => e.DateOfCreation).HasColumnName("date_of_creation").IsRequired();
                 entity.Property(e => e.DateOfLastCheck).HasColumnName("date_of_last_check");
-                entity.Property(e => e.MonitoredInterval).HasColumnName("monitored_interval"); //in s
+                entity.Property(e => e.MonitoredInterval).HasColumnName("monitored_interval").HasDefaultValue(900); //in s, default 15min
                 entity.Property(e => e.UserForeignKey).HasColumnName("fk_user").IsRequired();
                 //entity.Property(e => e.Owner).IsRequired();
             });
@@ -54,7 +54,7 @@ namespace EndpointsMonitoringService.Model
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.DateOfCheck).HasColumnName("date_of_check").IsRequired();
                 entity.Property(e => e.ReturnedHttpStatusCode).HasColumnName("returned_http_status_code").IsRequired();
-                entity.Property(e => e.ReturnedPayload).HasColumnName("returned_payload");
+                entity.Property(e => e.ReturnedPayload).HasColumnName("returned_payload").HasColumnType("TEXT");
                 entity.Property(e => e.MonitoredEndpointForeignKey).HasColumnName("fk_monitored_endpoint").IsRequired();
 
 

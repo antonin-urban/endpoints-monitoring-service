@@ -13,6 +13,7 @@ using System.Linq;
 using Serilog;
 using System.Net.Http;
 using EndpointsMonitoringService.Controllers;
+using Org.BouncyCastle.Math.EC;
 
 namespace EndpointsMonitoringService.Services
 {
@@ -48,74 +49,97 @@ namespace EndpointsMonitoringService.Services
 
             Log.Logger.ForContext(typeof(MonitorWorker)).Information("Monitor waking up");
             var endpoints = new List<MonitoredEndpoint>();
-            var results = new List<MonitoringResult>();
+            //var results = new List<MonitoringResult>();
+
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                endpoints = dbContext.MonitoredEndpoint.ToList();
+            }
+
+
+            foreach (var endpoint in endpoints)
+            {
                 var timestamp = DateTime.Now;
-                foreach (var endpoint in dbContext.MonitoredEndpoint)
+                if (endpoint.DateOfLastCheck != default)
+                {
+                    var targetTime = endpoint.DateOfLastCheck.AddSeconds(endpoint.MonitoredInterval);
+                    if (targetTime > timestamp)
+                    {
+                        continue;
+                    }
+                }
+
+
+                endpoint.DateOfLastCheck = timestamp;
+
+                MonitoringResult result = new MonitoringResult();
+                result.DateOfCheck = timestamp;
+                result.MonitoredEndpoint = endpoint;
+
+                try
                 {
 
-                    if (endpoint.DateOfLastCheck != default)
-                    {
-                        var targetTime = endpoint.DateOfLastCheck.AddSeconds(endpoint.MonitoredInterval);
-                        if (targetTime > timestamp)
-                        {
-                            continue;
-                        }
-                    }
+                    var request = new HttpRequestMessage(HttpMethod.Get,new UriBuilder(endpoint.Url).Uri);
 
+                    var client = _clientFactory.CreateClient();
 
-                    endpoint.DateOfLastCheck = timestamp;
-                    await dbContext.SaveChangesAsync();
-
-                    MonitoringResult result = new MonitoringResult();
-                    result.DateOfCheck = timestamp;
-                    result.MonitoredEndpoint = endpoint;
 
                     try
                     {
-
-                        var request = new HttpRequestMessage(HttpMethod.Get, endpoint.Url);
-
-                        var client = _clientFactory.CreateClient();
+                        var response = await client.SendAsync(request);
 
 
-                        try
+                        int statusCodeInt = default;
+                        int.TryParse(response.StatusCode.ToString(), out statusCodeInt);
+                        result.ReturnedHttpStatusCode = statusCodeInt;
+
+                        if (response.Content != null)
                         {
-                            var response = await client.SendAsync(request);
-
-
-                            int statusCodeInt = default;
-                            int.TryParse(response.StatusCode.ToString(), out statusCodeInt);
-                            result.ReturnedHttpStatusCode = statusCodeInt;
-
-                            if (response.IsSuccessStatusCode)
+                            try
                             {
-                                try
+                                using var responseString = response.Content.ReadAsStringAsync();
+                                result.ReturnedPayload = MySql.Data.MySqlClient.MySqlHelper.EscapeString(responseString.Result);
+                                if (result.ReturnedPayload.Length >20000)
                                 {
-                                    using var responseString = response.Content.ReadAsStringAsync();
-                                    result.ReturnedPayload = MySql.Data.MySqlClient.MySqlHelper.EscapeString(responseString.Result);
-                                }
-                                catch(Exception exx)
-                                {
-                                    result.ReturnedPayload = "ERROR READING RETURNED PAYLOAD AS STRING: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(exx.Message);
-                                }
+                                    result.ReturnedPayload = result.ReturnedPayload.Substring(0,20000).ToString();
+                                };
+                            }
+                            catch (Exception exx)
+                            {
+                                result.ReturnedPayload = "ERROR READING RETURNED PAYLOAD AS STRING: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(exx.Message);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            result.ReturnedPayload= "SERVICE EXCEPTION: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(ex.Message);
-                        }
-
-
-
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.ForContext(typeof(MonitorWorker)).Error(ex, String.Format("ERROR SENDING REQUEST TO ENDPOINT ID {0}", endpoint.Id));
+                        result.ReturnedPayload = "SERVICE EXCEPTION: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(ex.Message);
+                    }
+
+
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.ForContext(typeof(MonitorWorker)).Error(ex, String.Format("ERROR SENDING REQUEST TO ENDPOINT ID {0}", endpoint.Id));
+                }
+
+                try
+                {
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                        dbContext.MonitoredEndpoint.Update(endpoint);
+                        dbContext.MonitoringResult.Add(result);
+                        await dbContext.SaveChangesAsync();
                     }
                 }
+                catch (Exception ex)
+                {
+                    Log.Logger.ForContext(typeof(MonitorWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
+                }
+
+
             }
 
         }

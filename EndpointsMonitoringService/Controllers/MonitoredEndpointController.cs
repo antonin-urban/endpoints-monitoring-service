@@ -10,9 +10,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EndpointsMonitoringService.Controllers
 {
-    [Authorize]
+   
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MonitoredEndpointController : ControllerBase
     {
         private readonly DatabaseContext _context;
@@ -81,6 +82,14 @@ namespace EndpointsMonitoringService.Controllers
         [HttpPost]
         public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint(MonitoredEndpoint monitoredEndpoint)
         {
+
+            int userId = 0;
+            if(!int.TryParse(HttpContext.User.Claims.Where(x=>x.Type == "Id").FirstOrDefault().Value,out userId))
+            {
+                
+            }
+            monitoredEndpoint.Owner = _context.User.First(x=>x.Id == userId);
+
             _context.MonitoredEndpoint.Add(monitoredEndpoint);
             await _context.SaveChangesAsync();
 

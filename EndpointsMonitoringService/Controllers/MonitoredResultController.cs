@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EndpointsMonitoringService.Model;
 using Microsoft.AspNetCore.Authorization;
+using System.Net;
+using Microsoft.AspNetCore.Authentication;
 
 namespace EndpointsMonitoringService.Controllers
-{
-    [Authorize]
+{ 
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MonitoredResultController : ControllerBase
     {
         private readonly DatabaseContext _context;
@@ -81,6 +83,8 @@ namespace EndpointsMonitoringService.Controllers
         [HttpPost]
         public async Task<ActionResult<MonitoringResult>> PostMonitoringResult(MonitoringResult monitoringResult)
         {
+
+       
             _context.MonitoringResult.Add(monitoringResult);
             await _context.SaveChangesAsync();
 

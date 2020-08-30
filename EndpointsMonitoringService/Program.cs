@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using EndpointsMonitoringService.Model;
+using EndpointsMonitoringService.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,8 +33,6 @@ namespace EndpointsMonitoringService
 
 
 
-
-
             try
             {
                 var host = CreateHostBuilder(args).Build();
@@ -51,11 +50,19 @@ namespace EndpointsMonitoringService
             }
         }
 
+
+
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args).UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+            .ConfigureServices(services =>
+                {
+                    services.AddHostedService<MonitorWorker>();
+                    services.AddHttpClient();
                 });
     }
 }

@@ -78,7 +78,6 @@ namespace EndpointsMonitoringService
                 endpoints.MapControllers();
             });
 
-
             try
             {
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())

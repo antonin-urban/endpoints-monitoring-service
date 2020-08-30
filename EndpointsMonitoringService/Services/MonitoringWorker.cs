@@ -17,16 +17,16 @@ using Org.BouncyCastle.Math.EC;
 
 namespace EndpointsMonitoringService.Services
 {
-    public class MonitorWorker : IHostedService, IDisposable
+    public class MonitoringWorker : IHostedService, IDisposable
     {
 
 
         private System.Timers.Timer _timer;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<MonitorWorker> _logger;
+        private readonly ILogger<MonitoringWorker> _logger;
         private readonly IHttpClientFactory _clientFactory;
 
-        public MonitorWorker(IServiceScopeFactory scopeFactory, IHttpClientFactory clientFactory)
+        public MonitoringWorker(IServiceScopeFactory scopeFactory, IHttpClientFactory clientFactory)
         {
             _scopeFactory = scopeFactory;
             _clientFactory = clientFactory;
@@ -34,7 +34,7 @@ namespace EndpointsMonitoringService.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            Log.Logger.ForContext(typeof(MonitorWorker)).Information("MonitorWorker started");
+            Log.Logger.ForContext(typeof(MonitoringWorker)).Information("MonitoringWorker started");
 
             _timer = new System.Timers.Timer(5000);
             _timer.AutoReset = true;
@@ -47,7 +47,7 @@ namespace EndpointsMonitoringService.Services
         private async void _doWork(object sender, ElapsedEventArgs e)
         {
 
-            Log.Logger.ForContext(typeof(MonitorWorker)).Information("Monitor waking up");
+            Log.Logger.ForContext(typeof(MonitoringWorker)).Information("MonitoringWorker waking up...");
             var endpoints = new List<MonitoredEndpoint>();
             //var results = new List<MonitoringResult>();
 
@@ -121,7 +121,7 @@ namespace EndpointsMonitoringService.Services
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.ForContext(typeof(MonitorWorker)).Error(ex, String.Format("ERROR SENDING REQUEST TO ENDPOINT ID {0}", endpoint.Id));
+                    Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SENDING REQUEST TO ENDPOINT ID {0}", endpoint.Id));
                 }
 
                 try
@@ -136,7 +136,7 @@ namespace EndpointsMonitoringService.Services
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.ForContext(typeof(MonitorWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
+                    Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
                 }
 
 
@@ -147,7 +147,7 @@ namespace EndpointsMonitoringService.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            Log.Logger.ForContext(typeof(MonitorWorker)).Information("MonitorWorker stopped");
+            Log.Logger.ForContext(typeof(MonitoringWorker)).Information("MonitoringWorker stopped");
             _timer.Stop();
             Dispose();
             return Task.CompletedTask;

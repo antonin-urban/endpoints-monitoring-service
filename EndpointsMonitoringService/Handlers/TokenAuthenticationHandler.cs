@@ -75,6 +75,8 @@ namespace EndpointsMonitoringService.Handlers
 
                 _owner.RegisterOwner(foundUser);
 
+                _logger.LogInformation(string.Format("User '{0}' with Id {1} authenticated", foundUser.UserName,foundUser.Id));
+
                 Claim claim = new Claim("Id", foundUser.Id.ToString());
                 ClaimsIdentity idenity = new ClaimsIdentity(new List<Claim>() { claim }, Scheme.Name);
 

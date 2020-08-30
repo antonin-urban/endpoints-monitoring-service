@@ -30,12 +30,14 @@ namespace EndpointsMonitoringService.Controllers
             _context = context;
             _logger = logger.CreateLogger<MonitoredResultController>();
             _owner = owner;
+            
         }
 
         // GET: api/MonitoredResult
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResult()
         {
+            _logger.LogInformation("ROUTE: GET api/MonitoredResult");
             var ednpointsIds = await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).Select(x=>x.Id).ToListAsync();
   
             dynamic result = new List<MonitoringResult>();
@@ -52,6 +54,7 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MonitoringResult>> GetMonitoringResult(long id)
         {
+            _logger.LogInformation("ROUTE: GET api/MonitoredResult/id");
             var monitoringResult = await _context.MonitoringResult.FindAsync(id);
 
             if (monitoringResult == null)
@@ -62,10 +65,11 @@ namespace EndpointsMonitoringService.Controllers
             return monitoringResult;
         }
 
-        // GET: api/MonitoredResult/5
+        // GET: api/MonitoredResult/ForEndpoind/5
         [HttpGet("ForEndpoint/{id}")]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResultForEndopoint(int id)
         {
+            _logger.LogInformation("ROUTE: GET api/MonitoredResult/ForEndpoind/id");
             var monitoringResult = await _context.MonitoredEndpoint.FindAsync(id);
 
             if (monitoringResult == null)

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Renci.SshNet;
@@ -28,14 +29,16 @@ namespace EndpointsMonitoringService.Handlers
         private readonly ILogger<TokenAuthenticationHandler> _logger;
         private readonly DatabaseContext _databaseContext;
         private string _failureMessage;
+        private IOwner _owner;
 
 
         public TokenAuthenticationHandler(
-            DatabaseContext databaseContext, IOptionsMonitor<TokenAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            IOwner owner,DatabaseContext databaseContext, IOptionsMonitor<TokenAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
             _logger = logger.CreateLogger<TokenAuthenticationHandler>();
             _databaseContext = databaseContext;
+            _owner = owner;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -81,7 +84,10 @@ namespace EndpointsMonitoringService.Handlers
                 }
 
                 User user = foundUser.First();
-                Claim claim = new Claim("Id",user.Id.ToString());
+
+                _owner.RegisterOwner(user);
+
+                    Claim claim = new Claim("Id",user.Id.ToString());
                 ClaimsIdentity idenity = new ClaimsIdentity(new List<Claim>() { claim },Scheme.Name);
 
                 ClaimsPrincipal principal = new ClaimsPrincipal(idenity);

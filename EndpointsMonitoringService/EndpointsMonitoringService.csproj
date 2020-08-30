@@ -21,5 +21,6 @@
     <Folder Include="Model\" />
     <Folder Include="Controllers\" />
     <Folder Include="Handlers\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

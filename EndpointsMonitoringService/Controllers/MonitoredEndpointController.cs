@@ -7,20 +7,27 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EndpointsMonitoringService.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace EndpointsMonitoringService.Controllers
 {
-   
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class MonitoredEndpointController : ControllerBase
     {
         private readonly DatabaseContext _context;
+        private readonly ILogger<MonitoredEndpointController> _logger;
+        private string _failureMessage;
+        private readonly IOwner _owner; //user identity from request
 
-        public MonitoredEndpointController(DatabaseContext context)
+        public MonitoredEndpointController(IOwner owner, DatabaseContext context, ILoggerFactory logger)
         {
             _context = context;
+            _logger = logger.CreateLogger<MonitoredEndpointController>();
+            _owner = owner;
         }
 
         // GET: api/MonitoredEndpoint
@@ -82,13 +89,7 @@ namespace EndpointsMonitoringService.Controllers
         [HttpPost]
         public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint(MonitoredEndpoint monitoredEndpoint)
         {
-
-            int userId = 0;
-            if(!int.TryParse(HttpContext.User.Claims.Where(x=>x.Type == "Id").FirstOrDefault().Value,out userId))
-            {
-                
-            }
-            monitoredEndpoint.Owner = _context.User.First(x=>x.Id == userId);
+            monitoredEndpoint.Owner = _owner.Data;
 
             _context.MonitoredEndpoint.Add(monitoredEndpoint);
             await _context.SaveChangesAsync();

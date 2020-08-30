@@ -40,6 +40,9 @@ namespace EndpointsMonitoringService
 
             services.AddAuthentication("Basic Bearer Token Auhtentication")
             .AddScheme<TokenAuthenticationOptions, TokenAuthenticationHandler>("Basic Bearer Token Auhtentication", null);
+
+            services.AddScoped<IOwner, Owner>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

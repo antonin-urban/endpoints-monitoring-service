@@ -9,6 +9,9 @@ using EndpointsMonitoringService.Model;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices.ComTypes;
+using System.IO;
 
 namespace EndpointsMonitoringService.Controllers
 { 
@@ -18,17 +21,31 @@ namespace EndpointsMonitoringService.Controllers
     public class MonitoredResultController : ControllerBase
     {
         private readonly DatabaseContext _context;
+        private readonly ILogger<MonitoredResultController> _logger;
+        private string _failureMessage;
+        private readonly IOwner _owner; //user identity from request
 
-        public MonitoredResultController(DatabaseContext context)
-        {
+        public MonitoredResultController(IOwner owner, DatabaseContext context, ILoggerFactory logger)
+        { 
             _context = context;
+            _logger = logger.CreateLogger<MonitoredResultController>();
+            _owner = owner;
         }
 
         // GET: api/MonitoredResult
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResult()
         {
-            return await _context.MonitoringResult.ToListAsync();
+            var ednpointsIds = await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).Select(x=>x.Id).ToListAsync();
+  
+            dynamic result = new List<MonitoringResult>();
+
+
+            foreach (var endpointId in ednpointsIds)
+            {
+                result.AddRange(_context.MonitoringResult.Where(x => x.MonitoredEndpoint.Id == endpointId).OrderBy(x=>x.Id).ToList().TakeLast(10));
+            }
+            return result;
         }
 
         // GET: api/MonitoredResult/5
@@ -45,67 +62,32 @@ namespace EndpointsMonitoringService.Controllers
             return monitoringResult;
         }
 
-        // PUT: api/MonitoredResult/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMonitoringResult(long id, MonitoringResult monitoringResult)
+        // GET: api/MonitoredResult/5
+        [HttpGet("ForEndpoint/{id}")]
+        public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResultForEndopoint(int id)
         {
-            if (id != monitoringResult.Id)
-            {
-                return BadRequest();
-            }
+            var monitoringResult = await _context.MonitoredEndpoint.FindAsync(id);
 
-            _context.Entry(monitoringResult).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MonitoringResultExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/MonitoredResult
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
-        public async Task<ActionResult<MonitoringResult>> PostMonitoringResult(MonitoringResult monitoringResult)
-        {
-
-       
-            _context.MonitoringResult.Add(monitoringResult);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetMonitoringResult", new { id = monitoringResult.Id }, monitoringResult);
-        }
-
-        // DELETE: api/MonitoredResult/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<MonitoringResult>> DeleteMonitoringResult(long id)
-        {
-            var monitoringResult = await _context.MonitoringResult.FindAsync(id);
             if (monitoringResult == null)
             {
                 return NotFound();
             }
 
-            _context.MonitoringResult.Remove(monitoringResult);
-            await _context.SaveChangesAsync();
+            return _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == id).OrderBy(x=>x.Id).ToList().TakeLast(10).ToList();
+            //when the first .ToList() is missing before .TakeLast(10), EF is throwing exception (TakeLast() probably unsuported in EF):
+            //        System.InvalidOperationException: Processing of the LINQ expression 'DbSet<MonitoringResult>
+            //.Where(x => x.MonitoredEndpointForeignKey == __id_0)
+            //.OrderByDescending(x => x.DateOfCheck)
+            //.TakeLast(__p_1)' by 'NavigationExpandingExpressionVisitor' failed. This may indicate either a bug or a limitation in EF Core. See https://go.microsoft.com/fwlink/?linkid=2101433 for more detailed information.
 
-            return monitoringResult;
+
+
+
+
+
+
         }
+
 
         private bool MonitoringResultExists(long id)
         {

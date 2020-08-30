@@ -33,7 +33,7 @@ namespace EndpointsMonitoringService.Handlers
 
 
         public TokenAuthenticationHandler(
-            IOwner owner,DatabaseContext databaseContext, IOptionsMonitor<TokenAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            IOwner owner, DatabaseContext databaseContext, IOptionsMonitor<TokenAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
             _logger = logger.CreateLogger<TokenAuthenticationHandler>();
@@ -65,30 +65,18 @@ namespace EndpointsMonitoringService.Handlers
 
                 var accessToken = authorization.Parameter;
 
-                var foundUser = _databaseContext.User.
-                    Where(x => x.AccessToken == accessToken).ToArray();
+                var foundUser = _databaseContext.User.SingleOrDefault(x => x.AccessToken == accessToken);
 
-                if (foundUser.Length == 0)
+                if (foundUser == null)
                 {
                     _failureMessage = "User With Token Not Found";
                     return AuthenticateResult.Fail(_failureMessage);
                 }
 
-                if (foundUser.Length > 1)
-                {
-                    _logger.LogWarning(String.Format("FOUND MULTIPLE USERS WITH ONE TOKEN, ID: "
-                        + string.Join(",", foundUser.Select(x => x.Id).ToArray())
-                        ));
+                _owner.RegisterOwner(foundUser);
 
-                    _logger.LogWarning(String.Format("Getting first in collection"));
-                }
-
-                User user = foundUser.First();
-
-                _owner.RegisterOwner(user);
-
-                    Claim claim = new Claim("Id",user.Id.ToString());
-                ClaimsIdentity idenity = new ClaimsIdentity(new List<Claim>() { claim },Scheme.Name);
+                Claim claim = new Claim("Id", foundUser.Id.ToString());
+                ClaimsIdentity idenity = new ClaimsIdentity(new List<Claim>() { claim }, Scheme.Name);
 
                 ClaimsPrincipal principal = new ClaimsPrincipal(idenity);
                 AuthenticationTicket ticket = new AuthenticationTicket(principal, Scheme.Name);

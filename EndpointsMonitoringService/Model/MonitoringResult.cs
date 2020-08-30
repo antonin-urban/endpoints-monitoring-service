@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EndpointsMonitoringService.Model
 {
@@ -11,6 +12,7 @@ namespace EndpointsMonitoringService.Model
         public int ReturnedHttpStatusCode { get; set; }
         public string ReturnedPayload { get; set; }
         public MonitoredEndpoint MonitoredEndpoint { get; set; }
+        [JsonIgnore]
         public int MonitoredEndpointForeignKey {get;set;}
 
         public MonitoringResult()

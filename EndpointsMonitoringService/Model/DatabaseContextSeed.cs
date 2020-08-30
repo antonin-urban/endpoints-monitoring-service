@@ -17,7 +17,6 @@ namespace EndpointsMonitoringService.Model
         {
             _logger = logger.CreateLogger<DatabaseContextSeed>();
             _databaseContext = databaseContext;
-            _logger.LogInformation("DatabaseContextSeed constructor call");
         }
 
         public void SeedUsers()

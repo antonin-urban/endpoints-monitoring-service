@@ -34,7 +34,7 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoredEndpoint>>> GetMonitoredEndpoint()
         {
-            return await _context.MonitoredEndpoint.ToListAsync();
+            return await _context.MonitoredEndpoint.Where(x=>x.Owner == _owner.Data).ToListAsync();
         }
 
         // GET: api/MonitoredEndpoint/5
@@ -52,17 +52,22 @@ namespace EndpointsMonitoringService.Controllers
         }
 
         // PUT: api/MonitoredEndpoint/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMonitoredEndpoint(int id, MonitoredEndpoint monitoredEndpoint)
+        public async Task<IActionResult> PutMonitoredEndpoint(int id, [FromBody] MonitoredEndpoint monitoredEndpoint)
         {
-            if (id != monitoredEndpoint.Id)
+            monitoredEndpoint = CleanDeserializedMonitoredEndpoint(monitoredEndpoint);
+
+            var endpointToUpdate = await _context.MonitoredEndpoint.FindAsync(id);
+
+            if(endpointToUpdate == null)
             {
-                return BadRequest();
+                return NotFound("ENTITY NOT FOUND IN DB, USE PUT ONLY FOR UPDATES WITH EXISTING ID");
             }
 
-            _context.Entry(monitoredEndpoint).State = EntityState.Modified;
+            endpointToUpdate.Name = monitoredEndpoint.Name;
+            endpointToUpdate.Url = monitoredEndpoint.Url;
+
+            _context.Entry(endpointToUpdate).State = EntityState.Modified;
 
             try
             {
@@ -84,11 +89,11 @@ namespace EndpointsMonitoringService.Controllers
         }
 
         // POST: api/MonitoredEndpoint
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint(MonitoredEndpoint monitoredEndpoint)
+        public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint([FromBody]MonitoredEndpoint monitoredEndpoint)
         {
+            monitoredEndpoint = CleanDeserializedMonitoredEndpoint(monitoredEndpoint);
+
             monitoredEndpoint.Owner = _owner.Data;
 
             _context.MonitoredEndpoint.Add(monitoredEndpoint);
@@ -107,6 +112,11 @@ namespace EndpointsMonitoringService.Controllers
                 return NotFound();
             }
 
+            if(monitoredEndpoint.Owner != _owner.Data)
+            {
+                return Unauthorized("RECORD WITH THIS ID HAS DIFFERENT OWNER");
+            }
+
             _context.MonitoredEndpoint.Remove(monitoredEndpoint);
             await _context.SaveChangesAsync();
 
@@ -117,5 +127,18 @@ namespace EndpointsMonitoringService.Controllers
         {
             return _context.MonitoredEndpoint.Any(e => e.Id == id);
         }
+
+
+
+        private MonitoredEndpoint CleanDeserializedMonitoredEndpoint(MonitoredEndpoint deserializedMonitoredEndpoint)
+        {
+            var cleanMonitoredEndpoint = new MonitoredEndpoint();
+
+            cleanMonitoredEndpoint.Name = deserializedMonitoredEndpoint.Name;
+            cleanMonitoredEndpoint.Url = deserializedMonitoredEndpoint.Url;
+            return cleanMonitoredEndpoint;
+        }
+
+
     }
 }

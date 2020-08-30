@@ -87,8 +87,8 @@ namespace EndpointsMonitoringService
                     
                     if (env.IsDevelopment())
                     {
-                        dbContext.Database.EnsureDeleted();
-                        Log.Logger.ForContext(typeof(Program)).Information("Database EnsureDeleted done");
+                        //dbContext.Database.EnsureDeleted();
+                        //Log.Logger.ForContext(typeof(Program)).Information("Database EnsureDeleted done");
                     }
                     dbContext.Database.EnsureCreated();
                     Log.Logger.ForContext(typeof(Program)).Information("Database EnsureCreated done");

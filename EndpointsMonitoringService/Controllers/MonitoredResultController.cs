@@ -24,6 +24,7 @@ namespace EndpointsMonitoringService.Controllers
         private readonly ILogger<MonitoredResultController> _logger;
         private string _failureMessage;
         private readonly IOwner _owner; //user identity from request
+        private string _UNAUTHORIZED_MSG = "RECORD WITH THIS ID HAS DIFFERENT OWNER";
 
         public MonitoredResultController(IOwner owner, DatabaseContext context, ILoggerFactory logger)
         { 
@@ -40,8 +41,7 @@ namespace EndpointsMonitoringService.Controllers
             _logger.LogInformation("ROUTE: GET api/MonitoredResult");
             var ednpointsIds = await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).Select(x=>x.Id).ToListAsync();
   
-            dynamic result = new List<MonitoringResult>();
-
+            var result = new List<MonitoringResult>();
 
             foreach (var endpointId in ednpointsIds)
             {
@@ -62,6 +62,11 @@ namespace EndpointsMonitoringService.Controllers
                 return NotFound();
             }
 
+            if(!OwnerTest(monitoringResult))
+            {
+                return Unauthorized(_UNAUTHORIZED_MSG);
+            }
+
             return monitoringResult;
         }
 
@@ -70,14 +75,19 @@ namespace EndpointsMonitoringService.Controllers
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResultForEndopoint(int id)
         {
             _logger.LogInformation("ROUTE: GET api/MonitoredResult/ForEndpoind/id");
-            var monitoringResult = await _context.MonitoredEndpoint.FindAsync(id);
+            var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
-            if (monitoringResult == null)
+            if (monitoredEndpoint == null)
             {
                 return NotFound();
             }
 
-            return _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == id).OrderBy(x=>x.Id).ToList().TakeLast(10).ToList();
+            if(monitoredEndpoint.Owner.Id != _owner.Data.Id)
+            {
+                return Unauthorized(_UNAUTHORIZED_MSG);
+            }
+
+            return _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == monitoredEndpoint.Id).OrderBy(x=>x.Id).ToList().TakeLast(10).ToList();
             //when the first .ToList() is missing before .TakeLast(10), EF is throwing exception (TakeLast() probably unsuported in EF):
             //        System.InvalidOperationException: Processing of the LINQ expression 'DbSet<MonitoringResult>
             //.Where(x => x.MonitoredEndpointForeignKey == __id_0)
@@ -85,17 +95,27 @@ namespace EndpointsMonitoringService.Controllers
             //.TakeLast(__p_1)' by 'NavigationExpandingExpressionVisitor' failed. This may indicate either a bug or a limitation in EF Core. See https://go.microsoft.com/fwlink/?linkid=2101433 for more detailed information.
 
 
-
-
-
-
-
         }
 
 
-        private bool MonitoringResultExists(long id)
+        private bool OwnerTest(MonitoringResult monitoringResult)
         {
-            return _context.MonitoringResult.Any(e => e.Id == id);
+            try
+            {
+                var resultOwnerId = _context.MonitoredEndpoint.FirstOrDefaultAsync(x => x.Id == monitoringResult.MonitoredEndpointForeignKey).Id;
+                if (resultOwnerId != _owner.Data.Id)
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("ERROR RESOLVING OWNER", ex);
+                throw ex;
+            }
         }
+
+
     }
 }

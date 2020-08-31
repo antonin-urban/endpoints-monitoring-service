@@ -22,6 +22,7 @@ namespace EndpointsMonitoringService.Controllers
         private readonly ILogger<MonitoredEndpointController> _logger;
         private string _failureMessage;
         private readonly IOwner _owner; //user identity from request
+        private string _UNAUTHORIZED_MSG = "RECORD WITH THIS ID HAS DIFFERENT OWNER";
 
         public MonitoredEndpointController(IOwner owner, DatabaseContext context, ILoggerFactory logger)
         {
@@ -36,7 +37,7 @@ namespace EndpointsMonitoringService.Controllers
         public async Task<ActionResult<IEnumerable<MonitoredEndpoint>>> GetMonitoredEndpoint()
         {
             _logger.LogInformation("ROUTE: GET api/MonitoredEndpoint");
-            return await _context.MonitoredEndpoint.Where(x=>x.Owner == _owner.Data).ToListAsync();
+            return await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).ToListAsync();
         }
 
         // GET: api/MonitoredEndpoint/5
@@ -46,9 +47,14 @@ namespace EndpointsMonitoringService.Controllers
             _logger.LogInformation("ROUTE: GET api/MonitoredEndpoint/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
-            if (monitoredEndpoint == null)
+            if (monitoredEndpoint == null) 
             {
                 return NotFound();
+            }
+
+            if (monitoredEndpoint.Owner.Id != _owner.Data.Id)
+            {
+                return Unauthorized("RECORD WITH THIS ID HAS DIFFERENT OWNER");
             }
 
             return monitoredEndpoint;
@@ -63,9 +69,14 @@ namespace EndpointsMonitoringService.Controllers
 
             var endpointToUpdate = await _context.MonitoredEndpoint.FindAsync(id);
 
-            if(endpointToUpdate == null)
+            if (endpointToUpdate == null)
             {
                 return NotFound("ENTITY NOT FOUND IN DB, USE PUT ONLY FOR UPDATES WITH EXISTING ID");
+            }
+
+            if (monitoredEndpoint.Owner.Id != _owner.Data.Id)
+            {
+                return Unauthorized(_UNAUTHORIZED_MSG);
             }
 
             endpointToUpdate.Name = monitoredEndpoint.Name;
@@ -94,7 +105,7 @@ namespace EndpointsMonitoringService.Controllers
 
         // POST: api/MonitoredEndpoint
         [HttpPost]
-        public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint([FromBody]MonitoredEndpoint monitoredEndpoint)
+        public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint([FromBody] MonitoredEndpoint monitoredEndpoint)
         {
             _logger.LogInformation("ROUTE: POST api/MonitoredEndpoint");
             monitoredEndpoint = CleanDeserializedMonitoredEndpoint(monitoredEndpoint);
@@ -118,9 +129,9 @@ namespace EndpointsMonitoringService.Controllers
                 return NotFound();
             }
 
-            if(monitoredEndpoint.Owner != _owner.Data)
+            if (monitoredEndpoint.Owner != _owner.Data)
             {
-                return Unauthorized("RECORD WITH THIS ID HAS DIFFERENT OWNER");
+                return Unauthorized(_UNAUTHORIZED_MSG);
             }
 
             _context.MonitoredEndpoint.Remove(monitoredEndpoint);

@@ -62,5 +62,11 @@ Note: `id` on last position means an actual actual id
 * OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio.
 
 
+* Service is logging into terminal (Serilog logger]. 
+* Logger filters and connection string can be edited in `appsettings.json` and `appsettings.Development.json`.
+
+
+
+
 
 

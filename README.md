@@ -4,7 +4,7 @@ REST API microservice for monitoring http/https URLs, written in .NET Core.
 
 
 ## Description
-Authorization user can create `MonitoredEndpoint` via JSON POST request. Service will be sending GET requests to the `Url` in interval (s) defined by `MonitoringResult`. Responses are saved into object `MonitoringResult` (http status code, payload).
+Authorized user can create `MonitoredEndpoint` via JSON POST request. Service will be sending GET requests to the `Url` in interval (s) defined by `MonitoringResult`. Responses are saved into object `MonitoringResult` (http status code, payload).
 User can view one particular result, last 10 results or last 10 results by particular `MonitoredEndpoint`.
 
 `MonitoredEndpoint`can be viewed, created, updated, deleted by its owner.

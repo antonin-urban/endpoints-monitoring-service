@@ -29,7 +29,7 @@ Note: `id` on last position means an actual actual id
 
 * `GET: api/MonitoredResult` {last 10 results}
 * `GET: api/MonitoredResult/id`
-* `api/MonitoredResult/ForEndpoind/id_endpoint` {last 10 results for endpoint}
+* `GET: api/MonitoredResult/ForEndpoind/id_endpoint` {last 10 results for endpoint}
 
 
 
@@ -62,7 +62,7 @@ Note: `id` on last position means an actual actual id
 * OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio.
 
 
-* Service is logging into terminal (Serilog logger]. 
+* Service is logging into terminal (Serilog logger). 
 * Logger filters and connection string can be edited in `appsettings.json` and `appsettings.Development.json`.
 
 

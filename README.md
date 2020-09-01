@@ -20,11 +20,11 @@ Monitored interval value is in seconds.
 
 ## API endpoints
 Note: `id` on last position means an actual actual id
-* `GET: api/MonitoredEndpoint`
-* `GET: api/MonitoredEndpoint/id` 
-* `POST: api/MonitoredEndpoint`
-* `PUT: api/MonitoredEndpoint/id` {only for updates}
-* `DELETE: api/MonitoredEndpoint/id`
+* `GET:     api/MonitoredEndpoint`
+* `GET:     api/MonitoredEndpoint/id` 
+* `POST:    api/MonitoredEndpoint`
+* `PUT:     api/MonitoredEndpoint/id` {only for updates}
+* `DELETE:  api/MonitoredEndpoint/id`
 
 
 * `GET: api/MonitoredResult` {last 10 results}
@@ -46,10 +46,10 @@ Note: `id` on last position means an actual actual id
 ```json
 {
     "id": 563,
-        "dateOfCheck": "2020-09-01T00:20:24",
-        "returnedHttpStatusCode": 0,
-        "returnedPayload":"Some payload...",
-        "monitoredEndpointForeignKey": 1
+    "dateOfCheck": "2020-09-01T00:20:24",
+    "returnedHttpStatusCode": 0,
+    "returnedPayload":"Some payload...",
+    "monitoredEndpointForeignKey": 1
 }
 ```
 
@@ -73,7 +73,7 @@ dotnet run
 
 * OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio and run it in the IDE.
 ### Notes:
-* Service root URL can be changed in file `./Properties/launchSettings.json`
+* Service root URL can be changed in file `./Properties/launchSettings.json`. Default is `http://localhost:5000`.
 * Service is logging into terminal ([Serilog logger](https://serilog.net)). You should see output like this:
 ```Console
 [2020-09-01 08:29:13.189][INF][EndpointsMonitoringService.Program] APP STARTED 

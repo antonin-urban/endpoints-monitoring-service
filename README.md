@@ -72,7 +72,7 @@ dotnet run
 ```
 
 * OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio and run it in the IDE.
-### Notes
+### Notes:
 * Service root URL can be changed in file `./Properties/launchSettings.json`
 * Service is logging into terminal ([Serilog logger](https://serilog.net)). You should see output like this:
 ```Console

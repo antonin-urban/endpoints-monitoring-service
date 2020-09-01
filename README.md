@@ -54,16 +54,17 @@ Note: `id` on last position means an actual actual id
 ```
 
 ## Prerequisites
-* .NET Core
-* MySQL Server
+* [.NET Core](https://dotnet.microsoft.com/download)
+* [MySQL Server](https://www.mysql.com)
 
 ## How to run
 * Pull the solution, go to folder with project `./EndpointsMonitoringService/EndpointsMonitoringService.csproj`, run `dotnet run`. The project should build and run.
 * OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio.
 
+* Service root URL can be changed in file `./Properties/launchSettings.json`
+* Service is logging into terminal ([Serilog logger](https://serilog.net)). 
+* Logger filters and connection string can be edited in `appsettings.json` (Publish builds) and `appsettings.Development.json` (Debug, Release builds).
 
-* Service is logging into terminal (Serilog logger). 
-* Logger filters and connection string can be edited in `appsettings.json` and `appsettings.Development.json`.
 
 
 

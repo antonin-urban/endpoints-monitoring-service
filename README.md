@@ -20,11 +20,11 @@ Monitored interval value is in seconds.
 
 ## API endpoints
 Note: `id` on last position means an actual actual id
-* `GET: api/MonitoredEndpoint`
-* `GET: api/MonitoredEndpoint/id` 
-* `POST: api/MonitoredEndpoint`
-* `PUT: api/MonitoredEndpoint/id` {only for updates}
-* `DELETE: api/MonitoredEndpoint/id`
+* `GET:     api/MonitoredEndpoint`
+* `GET:     api/MonitoredEndpoint/id` 
+* `POST:    api/MonitoredEndpoint`
+* `PUT:     api/MonitoredEndpoint/id` {only for updates}
+* `DELETE:  api/MonitoredEndpoint/id`
 
 
 * `GET: api/MonitoredResult` {last 10 results}

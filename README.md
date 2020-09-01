@@ -46,10 +46,10 @@ Note: `id` on last position means an actual actual id
 ```json
 {
     "id": 563,
-        "dateOfCheck": "2020-09-01T00:20:24",
-        "returnedHttpStatusCode": 0,
-        "returnedPayload":"Some payload...",
-        "monitoredEndpointForeignKey": 1
+    "dateOfCheck": "2020-09-01T00:20:24",
+    "returnedHttpStatusCode": 0,
+    "returnedPayload":"Some payload...",
+    "monitoredEndpointForeignKey": 1
 }
 ```
 

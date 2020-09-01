@@ -58,16 +58,29 @@ Note: `id` on last position means an actual actual id
 * [MySQL Server](https://www.mysql.com)
 
 ## How to run
-* Pull the solution, go to folder with project `./EndpointsMonitoringService/EndpointsMonitoringService.csproj`, run `dotnet run`. The project should build and run.
-* OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio.
+* Clone the solution.
+```console
+git clone https://github.com/antonin-urban/endpoints-monitoring-service.git
+````
+* Go to service project folder.
+```console
+cd ./endpoints-monitoring-service/EndpointsMonitoringService
+```
+* Run with dotnet cmd. The project should build and run.
+```console
+dotnet run
+```
 
+* OR open the solution `./EndpointsMonitoringService.sln` with Visual Studio and run it in the IDE.
+### Notes
 * Service root URL can be changed in file `./Properties/launchSettings.json`
-* Service is logging into terminal ([Serilog logger](https://serilog.net)). 
+* Service is logging into terminal ([Serilog logger](https://serilog.net)). You should see output like this:
+```Console
+[2020-09-01 08:29:13.189][INF][EndpointsMonitoringService.Program] APP STARTED 
+[08:29:14.102][INF][EndpointsMonitoringService.Program] Database EnsureCreated done
+[08:29:14.349][INF][EndpointsMonitoringService.Services.MonitoringWorker] MonitoringWorker started
+[08:29:19.352][INF][EndpointsMonitoringService.Services.MonitoringWorker] MonitoringWorker waking up...
+...
+```
 * Logger filters and connection string can be edited in `appsettings.json` (Publish builds) and `appsettings.Development.json` (Debug, Release builds).
-
-
-
-
-
-
 

@@ -83,4 +83,3 @@ dotnet run
 ...
 ```
 * Logger filters and connection string can be edited in `appsettings.json` (Publish builds) and `appsettings.Development.json` (Debug, Release builds).
-

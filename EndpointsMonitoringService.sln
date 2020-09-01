@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EndpointsMonitoringService"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EndpointsMonitoringService.UnitTests", "EndpointsMonitoringService.UnitTests\EndpointsMonitoringService.UnitTests.csproj", "{BE0A9913-825A-42E6-84E6-98444262CB54}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{DD1EFC6C-F22E-4673-9613-951FE6FB4217}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{BE0A9913-825A-42E6-84E6-98444262CB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE0A9913-825A-42E6-84E6-98444262CB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE0A9913-825A-42E6-84E6-98444262CB54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD1EFC6C-F22E-4673-9613-951FE6FB4217}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD1EFC6C-F22E-4673-9613-951FE6FB4217}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD1EFC6C-F22E-4673-9613-951FE6FB4217}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD1EFC6C-F22E-4673-9613-951FE6FB4217}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

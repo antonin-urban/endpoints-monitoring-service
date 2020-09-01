@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  endpointsmonitoringservice:
+    image: ${DOCKER_REGISTRY-}endpointsmonitoringservice
+    build:
+      context: .
+      dockerfile: EndpointsMonitoringService/Dockerfile

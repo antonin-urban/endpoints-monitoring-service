@@ -18,7 +18,7 @@ Data: JSON body.
 
 Monitored interval value is in seconds.
 
-## API Endpoints
+## API endpoints
 Note: `id` on last position means an actual actual id
 * `GET: api/MonitoredEndpoint`
 * `GET: api/MonitoredEndpoint/id` 

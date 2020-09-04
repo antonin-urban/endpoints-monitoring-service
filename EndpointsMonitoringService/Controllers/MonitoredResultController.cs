@@ -37,7 +37,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResult()
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult");
             var ednpointsIds = await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).Select(x => x.Id).ToListAsync();
 
             var result = new List<MonitoringResult>();
@@ -53,7 +52,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MonitoringResult>> GetMonitoringResult(long id)
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult/id");
             var monitoringResult = await _context.MonitoringResult.FindAsync(id);
 
             if (monitoringResult == null)
@@ -73,7 +71,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("ForEndpoint/{id}")]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResultForEndopoint(int id)
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult/ForEndpoind/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
             if (monitoredEndpoint == null)

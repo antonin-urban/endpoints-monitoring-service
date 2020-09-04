@@ -59,8 +59,6 @@ namespace EndpointsMonitoringService
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
-
-
             }
 
             app.UseHttpsRedirection();

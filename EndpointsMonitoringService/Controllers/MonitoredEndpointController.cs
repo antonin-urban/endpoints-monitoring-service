@@ -12,7 +12,6 @@ using System.Globalization;
 
 namespace EndpointsMonitoringService.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -47,7 +46,7 @@ namespace EndpointsMonitoringService.Controllers
             _logger.LogInformation("ROUTE: GET api/MonitoredEndpoint/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
-            if (monitoredEndpoint == null) 
+            if (monitoredEndpoint == null)
             {
                 return NotFound();
             }
@@ -145,8 +144,6 @@ namespace EndpointsMonitoringService.Controllers
             return _context.MonitoredEndpoint.Any(e => e.Id == id);
         }
 
-
-
         private MonitoredEndpoint CleanDeserializedMonitoredEndpoint(MonitoredEndpoint deserializedMonitoredEndpoint)
         {
             var cleanMonitoredEndpoint = new MonitoredEndpoint();
@@ -156,7 +153,6 @@ namespace EndpointsMonitoringService.Controllers
             cleanMonitoredEndpoint.MonitoredInterval = deserializedMonitoredEndpoint.MonitoredInterval;
             return cleanMonitoredEndpoint;
         }
-
 
     }
 }

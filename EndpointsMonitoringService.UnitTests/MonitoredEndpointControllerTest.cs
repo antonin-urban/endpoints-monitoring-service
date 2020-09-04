@@ -27,7 +27,6 @@ namespace EndpointsMonitoringService.UnitTests
         public void GetMonitoredEndpoint_ForId_ValidUser_ReturnSameObject()
         {
             //ARANGE
-
             var fakeLoggerFactory = new NullLoggerFactory();
             var options = new DbContextOptionsBuilder<DatabaseContext>().
                 UseInMemoryDatabase(DateTime.Now.ToString("HHmmssffffzzz")).Options;
@@ -67,7 +66,6 @@ namespace EndpointsMonitoringService.UnitTests
                     HttpContext = fakeHttpContext.Object,
                 };
 
-
                 //ACT
                 var monitoredEndpointController = new MonitoredEndpointController(owner, context, fakeLoggerFactory);
                 var controllerResult = monitoredEndpointController.GetMonitoredEndpoint(1).Result;
@@ -90,7 +88,6 @@ namespace EndpointsMonitoringService.UnitTests
                 UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
 
             var owner = new Owner();
-
 
             var fakeUser1 = new Model.User()
             {
@@ -122,12 +119,10 @@ namespace EndpointsMonitoringService.UnitTests
 
             using (var context = new DatabaseContext(options, fakeLoggerFactory))
             {
-
                 context.Add(fakeUser1);
                 context.Add(fakeUser2);
                 context.Add(fakeEndpoint);
                 context.SaveChanges();
-
 
                 var fakeHttpContext = new Mock<HttpContext>();
                 var fakeHttpRequest = new Mock<HttpRequest>();
@@ -138,18 +133,16 @@ namespace EndpointsMonitoringService.UnitTests
                     HttpContext = fakeHttpContext.Object,
                 };
 
-
                 //ACT
                 var monitoredEndpointController = new MonitoredEndpointController(owner, context, fakeLoggerFactory);
                 var controllerResult = monitoredEndpointController.GetMonitoredEndpoint(1).Result;
 
                 //ASSERT
-                Assert.Null(controllerResult.Value);;
+                Assert.Null(controllerResult.Value); ;
                 context.Database.EnsureDeleted();
             }
         }
 
         //todo...
-
     }
 }

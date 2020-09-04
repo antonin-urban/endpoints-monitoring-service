@@ -23,10 +23,7 @@ namespace EndpointsMonitoringService.Model
 
         public MonitoredEndpoint()
         {
-
             this.DateOfCreation = DateTime.Now;
-
         }
-
     }
 }

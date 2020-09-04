@@ -13,9 +13,9 @@ namespace EndpointsMonitoringService.Model
         public int ReturnedHttpStatusCode { get; set; }
         public string ReturnedPayload { get; set; }
         [JsonIgnore]
-        public MonitoredEndpoint MonitoredEndpoint { get; set; }
+        public MonitoredEndpoint MonitoredEndpoint { get; set; } 
         [DisplayName("MonitoredEndopoint")]
-        public int MonitoredEndpointForeignKey {get;set;}
+        public int MonitoredEndpointForeignKey { get; set; }
 
         public MonitoringResult()
         {

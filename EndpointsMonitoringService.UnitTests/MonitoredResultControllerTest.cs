@@ -21,7 +21,6 @@ namespace EndpointsMonitoringService.UnitTests
         public void GetMonitoredResult_ForEndpoint_ValidUser_Return10LastResults()
         {
             //ARANGE
-
             var fakeLoggerFactory = new NullLoggerFactory();
             var options = new DbContextOptionsBuilder<DatabaseContext>().
                 UseInMemoryDatabase(DateTime.Now.ToString(Guid.NewGuid().ToString())).EnableDetailedErrors().Options;
@@ -60,7 +59,7 @@ namespace EndpointsMonitoringService.UnitTests
                 Name = "test",
                 Url = "www.test.cz",
                 DateOfCreation = DateTime.Now,
-                UserForeignKey =2,
+                UserForeignKey = 2,
                 Owner = fakeUser2,
             };
 
@@ -87,11 +86,10 @@ namespace EndpointsMonitoringService.UnitTests
                     };
                     context.Add(monitoringResult);
 
-                    if(i>1) //make sure it is LAST 10
+                    if (i > 1) //make sure it is LAST 10
                     {
                         expectedCollection.Add(monitoringResult);
                     }
-
                 }
 
                 for (int i = 94; i < 100; i++)
@@ -104,12 +102,10 @@ namespace EndpointsMonitoringService.UnitTests
                         ReturnedPayload = string.Empty,
                     };
                     context.Add(monitoringResult);
-
-
                 }
 
                 context.SaveChanges();
-            
+
                 var fakeHttpContext = new Mock<HttpContext>();
                 var fakeHttpRequest = new Mock<HttpRequest>();
                 fakeHttpContext.SetupGet<HttpRequest>(x => x.Request).Returns(fakeHttpRequest.Object);
@@ -118,7 +114,6 @@ namespace EndpointsMonitoringService.UnitTests
                 {
                     HttpContext = fakeHttpContext.Object,
                 };
-
 
                 //ACT
                 var monitoredEndpointController = new MonitoredResultController(owner, context, fakeLoggerFactory);

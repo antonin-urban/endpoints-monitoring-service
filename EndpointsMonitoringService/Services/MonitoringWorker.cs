@@ -19,8 +19,6 @@ namespace EndpointsMonitoringService.Services
 {
     public class MonitoringWorker : IHostedService, IDisposable
     {
-
-
         private System.Timers.Timer _timer;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<MonitoringWorker> _logger;
@@ -46,7 +44,6 @@ namespace EndpointsMonitoringService.Services
 
         private async void _doWork(object sender, ElapsedEventArgs e)
         {
-
             Log.Logger.ForContext(typeof(MonitoringWorker)).Information("MonitoringWorker waking up...");
             var endpoints = new List<MonitoredEndpoint>();
             //var results = new List<MonitoringResult>();
@@ -56,7 +53,6 @@ namespace EndpointsMonitoringService.Services
                 var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
                 endpoints = dbContext.MonitoredEndpoint.ToList();
             }
-
 
             foreach (var endpoint in endpoints)
             {
@@ -70,26 +66,19 @@ namespace EndpointsMonitoringService.Services
                     }
                 }
 
-
                 endpoint.DateOfLastCheck = timestamp;
-
                 MonitoringResult result = new MonitoringResult();
                 result.DateOfCheck = timestamp;
                 result.MonitoredEndpoint = endpoint;
 
                 try
                 {
-
-                    var request = new HttpRequestMessage(HttpMethod.Get,new UriBuilder(endpoint.Url).Uri);
-
+                    var request = new HttpRequestMessage(HttpMethod.Get, new UriBuilder(endpoint.Url).Uri);
                     var client = _clientFactory.CreateClient();
-
 
                     try
                     {
                         var response = await client.SendAsync(request);
-
-
                         int statusCodeInt = default;
                         int.TryParse(response.StatusCode.ToString(), out statusCodeInt);
                         result.ReturnedHttpStatusCode = statusCodeInt;
@@ -100,9 +89,9 @@ namespace EndpointsMonitoringService.Services
                             {
                                 using var responseString = response.Content.ReadAsStringAsync();
                                 result.ReturnedPayload = MySql.Data.MySqlClient.MySqlHelper.EscapeString(responseString.Result);
-                                if (result.ReturnedPayload.Length >20000)
+                                if (result.ReturnedPayload.Length > 20000)
                                 {
-                                    result.ReturnedPayload = result.ReturnedPayload.Substring(0,20000).ToString();
+                                    result.ReturnedPayload = result.ReturnedPayload.Substring(0, 20000).ToString();
                                 };
                             }
                             catch (Exception exx)
@@ -115,9 +104,6 @@ namespace EndpointsMonitoringService.Services
                     {
                         result.ReturnedPayload = "SERVICE EXCEPTION: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(ex.Message);
                     }
-
-
-
                 }
                 catch (Exception ex)
                 {
@@ -138,12 +124,8 @@ namespace EndpointsMonitoringService.Services
                 {
                     Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
                 }
-
-
             }
-
         }
-
 
         public Task StopAsync(CancellationToken cancellationToken)
         {

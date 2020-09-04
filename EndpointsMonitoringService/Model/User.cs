@@ -20,7 +20,5 @@ namespace EndpointsMonitoringService.Model
         {
 
         }
-
-
     }
 }

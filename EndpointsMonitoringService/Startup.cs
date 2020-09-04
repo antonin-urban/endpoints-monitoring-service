@@ -21,9 +21,6 @@ namespace EndpointsMonitoringService
 {
     public class Startup
     {
-
-        
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -83,7 +80,7 @@ namespace EndpointsMonitoringService
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
                 {
                     var dbContext = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                    
+
                     if (env.IsDevelopment())
                     {
                         //dbContext.Database.EnsureDeleted();

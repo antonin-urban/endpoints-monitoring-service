@@ -9,11 +9,9 @@ namespace EndpointsMonitoringService.Model
     public class DatabaseContext : DbContext
     {
         private readonly ILogger<DatabaseContext> _logger;
-
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<MonitoredEndpoint> MonitoredEndpoint { get; set; }
         public virtual DbSet<MonitoringResult> MonitoringResult { get; set; }
-
 
         public DatabaseContext(DbContextOptions<DatabaseContext> options, ILoggerFactory logger) : base(options)
         {
@@ -23,7 +21,6 @@ namespace EndpointsMonitoringService.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
@@ -56,28 +53,20 @@ namespace EndpointsMonitoringService.Model
                 entity.Property(e => e.ReturnedHttpStatusCode).HasColumnName("returned_http_status_code").IsRequired();
                 entity.Property(e => e.ReturnedPayload).HasColumnName("returned_payload").HasColumnType("TEXT");
                 entity.Property(e => e.MonitoredEndpointForeignKey).HasColumnName("fk_monitored_endpoint").IsRequired();
-
-
                 //entity.Property(e => e.Owner).IsRequired();
             });
 
             modelBuilder.Entity<MonitoredEndpoint>()
-           .HasOne(p => p.Owner)
-           .WithMany(b => b.Endpoints)
-           .HasForeignKey(p => p.UserForeignKey);
+            .HasOne(p => p.Owner)
+            .WithMany(b => b.Endpoints)
+            .HasForeignKey(p => p.UserForeignKey);
 
             modelBuilder.Entity<MonitoringResult>()
-          .HasOne(p => p.MonitoredEndpoint)
-          .WithMany(b => b.Results)
-          .HasForeignKey(p => p.MonitoredEndpointForeignKey);
+            .HasOne(p => p.MonitoredEndpoint)
+            .WithMany(b => b.Results)
+            .HasForeignKey(p => p.MonitoredEndpointForeignKey);
 
             modelBuilder.Entity<User>().HasIndex(x => x.AccessToken).IsUnique();
-
-
-
-
         }
-
-
     }
 }

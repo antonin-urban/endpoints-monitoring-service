@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,12 +26,10 @@ namespace EndpointsMonitoringService.Handlers
 {
     public class TokenAuthenticationHandler : AuthenticationHandler<TokenAuthenticationOptions>
     {
-
         private readonly ILogger<TokenAuthenticationHandler> _logger;
         private readonly DatabaseContext _databaseContext;
         private string _failureMessage;
         private IOwner _owner;
-
 
         public TokenAuthenticationHandler(
             IOwner owner, DatabaseContext databaseContext, IOptionsMonitor<TokenAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
@@ -45,7 +44,6 @@ namespace EndpointsMonitoringService.Handlers
         {
             try
             {
-
                 var headers = Request.Headers;
                 if (headers == null || !headers.ContainsKey("Authorization"))
                 {
@@ -60,7 +58,6 @@ namespace EndpointsMonitoringService.Handlers
                     _failureMessage = "No Bearer Token => Use Bearer Token Authentication Specification";
                     return AuthenticateResult.Fail(_failureMessage);
                 }
-
 
                 var accessToken = authorization.Parameter;
 
@@ -90,25 +87,17 @@ namespace EndpointsMonitoringService.Handlers
                 _failureMessage = "Service Internal Exception";
                 return AuthenticateResult.Fail(_failureMessage);
             }
-
         }
-
-
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase += " - " + _failureMessage;
             return base.HandleChallengeAsync(properties);
         }
-
-
     }
 
     public class TokenAuthenticationOptions : AuthenticationSchemeOptions
     {
-
-
-
-
+        
     }
 }

@@ -19,9 +19,6 @@ namespace EndpointsMonitoringService
     {
         public static void Main(string[] args)
         {
-
-
-
             var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
@@ -30,8 +27,6 @@ namespace EndpointsMonitoringService
             Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .CreateLogger();
-
-
 
             try
             {
@@ -49,9 +44,6 @@ namespace EndpointsMonitoringService
                 Log.CloseAndFlush();
             }
         }
-
-
-
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args).UseSerilog()

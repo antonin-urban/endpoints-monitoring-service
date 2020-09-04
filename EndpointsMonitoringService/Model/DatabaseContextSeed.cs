@@ -11,9 +11,7 @@ namespace EndpointsMonitoringService.Model
         private readonly ILogger<DatabaseContextSeed> _logger;
         private readonly DatabaseContext _databaseContext;
 
-
-
-        public DatabaseContextSeed(ILoggerFactory logger,DatabaseContext databaseContext)
+        public DatabaseContextSeed(ILoggerFactory logger, DatabaseContext databaseContext)
         {
             _logger = logger.CreateLogger<DatabaseContextSeed>();
             _databaseContext = databaseContext;
@@ -23,7 +21,6 @@ namespace EndpointsMonitoringService.Model
         {
             try
             {
-
                 var user1 = new User()
                 {
                     UserName = "Applifting",
@@ -31,9 +28,8 @@ namespace EndpointsMonitoringService.Model
                     AccessToken = "93f39e2f-80de-4033-99ee-249d92736a25"
                 };
 
-
-                if(!_databaseContext.User.Any(
-                    x=>x.UserName == user1.UserName
+                if (!_databaseContext.User.Any(
+                    x => x.UserName == user1.UserName
                     && x.Email == user1.Email
                     && x.AccessToken == user1.AccessToken
                 ))
@@ -42,8 +38,6 @@ namespace EndpointsMonitoringService.Model
                     _databaseContext.SaveChangesAsync();
                 }
 
-
-                
                 user1 = new User()
                 {
                     UserName = "Batman",
@@ -51,26 +45,20 @@ namespace EndpointsMonitoringService.Model
                     AccessToken = "dcb20f8a-5657-4f1b-9f7f-ce65739b359e"
                 };
 
-
                 if (!_databaseContext.User.Any(
                    x => x.UserName == user1.UserName
                    && x.Email == user1.Email
                    && x.AccessToken == user1.AccessToken
-               ))
+                ))
                 {
                     _databaseContext.Add(user1);
                     _databaseContext.SaveChangesAsync();
                 }
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ERROR SEEDING USER");
             }
         }
-
-        
-
     }
 }

@@ -61,7 +61,7 @@ namespace EndpointsMonitoringService.Handlers
 
                 var accessToken = Guid.Parse(authorization.Parameter);
 
-                var foundUser = _databaseContext.User.SingleOrDefault(x => x.AccessToken == accessToken);
+                var foundUser = await _databaseContext.User.SingleOrDefaultAsync(x => x.AccessToken == accessToken);
 
                 if (foundUser == null)
                 {

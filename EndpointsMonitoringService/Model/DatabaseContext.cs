@@ -67,6 +67,9 @@ namespace EndpointsMonitoringService.Model
             .HasForeignKey(p => p.MonitoredEndpointForeignKey);
 
             modelBuilder.Entity<User>().HasIndex(x => x.AccessToken).IsUnique();
+            modelBuilder.Entity<MonitoringResult>().HasIndex(x => x.DateOfCheck);
+            modelBuilder.Entity<MonitoredEndpoint>().HasIndex(x => x.UserForeignKey);
+
         }
     }
 }

@@ -86,7 +86,9 @@ namespace EndpointsMonitoringService.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MonitoredEndpointExists(id))
+                var endpointExistsTest = await MonitoredEndpointExists(id);
+
+                if (endpointExistsTest)
                 {
                     return NotFound();
                 }
@@ -134,9 +136,9 @@ namespace EndpointsMonitoringService.Controllers
             return monitoredEndpoint;
         }
 
-        private bool MonitoredEndpointExists(int id)
+        private Task<bool> MonitoredEndpointExists(int id)
         {
-            return _context.MonitoredEndpoint.Any(e => e.Id == id);
+            return _context.MonitoredEndpoint.AnyAsync(e => e.Id == id);
         }
 
         private MonitoredEndpoint CleanDeserializedMonitoredEndpoint(MonitoredEndpoint deserializedMonitoredEndpoint)

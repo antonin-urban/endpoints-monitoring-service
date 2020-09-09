@@ -26,87 +26,26 @@ namespace EndpointsMonitoringService.UnitTests
                 UseInMemoryDatabase(DateTime.Now.ToString(Guid.NewGuid().ToString())).EnableDetailedErrors().Options;
             var owner = new Owner();
 
-            var fakeUser1 = new Model.User()
-            {
-                Id = 1,
-                UserName = "test",
-                Email = "test@test.com",
-                AccessToken = Guid.NewGuid(),
-            };
+            var fakeUsersList = FakeDataGenerator.GenerateUsers(2);
 
-            var fakeUser2 = new Model.User()
-            {
-                Id = 2,
-                UserName = "test2",
-                Email = "test2@test.com",
-                AccessToken = Guid.NewGuid(),
-            };
+            owner.RegisterOwner(fakeUsersList[0]);
 
-            owner.RegisterOwner(fakeUser1);
-            var fakeEndpoint1 = new MonitoredEndpoint()
-            {
-                Id = 1,
-                Name = "test",
-                Url = "www.test.cz",
-                DateOfCreation = DateTime.Now,
-                UserForeignKey = 1,
-                Owner = fakeUser1,
-            };
+            var fakeMonitoredEndpointList = new List<MonitoredEndpoint>();
+            fakeMonitoredEndpointList.AddRange(FakeDataGenerator.GenerateEndpoint(1, fakeUsersList[0]));
+            fakeMonitoredEndpointList.AddRange(FakeDataGenerator.GenerateEndpoint(1, fakeUsersList[1], 2));
 
-            var fakeEndpoint2 = new MonitoredEndpoint()
-            {
-                Id = 2,
-                Name = "test",
-                Url = "www.test.cz",
-                DateOfCreation = DateTime.Now,
-                UserForeignKey = 2,
-                Owner = fakeUser2,
-            };
-
+            var fakeMonitoringResultList = new List<MonitoringResult>();
             var expectedCollection = new List<MonitoringResult>();
+            fakeMonitoringResultList.AddRange(FakeDataGenerator.GenerateMonitoringResult(11, fakeMonitoredEndpointList[0], fakeMonitoredEndpointList[0].Owner));
+            expectedCollection = fakeMonitoringResultList.TakeLast(10).ToList();
+            fakeMonitoringResultList.AddRange(FakeDataGenerator.GenerateMonitoringResult(5, fakeMonitoredEndpointList[1], fakeMonitoredEndpointList[1].Owner, 12));
+
 
             using (var context = new DatabaseContext(options, fakeLoggerFactory))
             {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
-
-                context.Add(fakeUser1);
-                context.Add(fakeUser2);
-                context.Add(fakeEndpoint1);
-                context.Add(fakeEndpoint2);
-
-                for (int i = 1; i < 12; i++) //seed 11
-                {
-                    System.Threading.Thread.Sleep(1000); //to make difference in DateOfCheck
-                    var monitoringResult = new MonitoringResult()
-                    {
-                        Id = i,
-                        MonitoredEndpoint = fakeEndpoint1,
-                        ReturnedHttpStatusCode = 0,
-                        ReturnedPayload = string.Empty,
-                        DateOfCheck = DateTime.Now,
-                    };
-                    context.Add(monitoringResult);
-
-                    if (i > 1) //make sure it is LAST 10
-                    {
-                        expectedCollection.Add(monitoringResult);
-                    }
-                }
-
-                for (int i = 94; i < 100; i++)
-                {
-                    var monitoringResult = new MonitoringResult()
-                    {
-                        Id = i,
-                        MonitoredEndpoint = fakeEndpoint2,
-                        ReturnedHttpStatusCode = 0,
-                        ReturnedPayload = string.Empty,
-                        DateOfCheck = DateTime.Now
-                    };
-                    context.Add(monitoringResult);
-                }
-
+                context.User.AddRange(fakeUsersList);
+                context.MonitoredEndpoint.AddRange(fakeMonitoredEndpointList);
+                context.MonitoringResult.AddRange(fakeMonitoringResultList);
                 context.SaveChanges();
 
                 var fakeHttpContext = new Mock<HttpContext>();
@@ -120,7 +59,7 @@ namespace EndpointsMonitoringService.UnitTests
 
                 //ACT
                 var monitoredEndpointController = new MonitoredResultController(owner, context, fakeLoggerFactory);
-                var controllerResult = monitoredEndpointController.GetMonitoringResultForEndopoint(1).Result;
+                var controllerResult = monitoredEndpointController.GetMonitoringResultForEndopoint(fakeMonitoredEndpointList[0].Id).Result;
 
                 //ASSERT
                 Assert.NotNull(controllerResult);
@@ -128,7 +67,7 @@ namespace EndpointsMonitoringService.UnitTests
 
                 var resutlCollectionOrdered = controllerResult.Value.OrderBy(x => x.DateOfCheck).ToList();
 
-                Assert.Equal(expectedCollection,resutlCollectionOrdered);
+                Assert.Equal(expectedCollection, resutlCollectionOrdered);
                 context.Database.EnsureDeleted();
             }
         }

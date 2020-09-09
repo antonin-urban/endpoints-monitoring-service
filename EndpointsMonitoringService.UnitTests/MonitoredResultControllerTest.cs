@@ -31,7 +31,7 @@ namespace EndpointsMonitoringService.UnitTests
                 Id = 1,
                 UserName = "test",
                 Email = "test@test.com",
-                AccessToken = "1234-abcd",
+                AccessToken = Guid.NewGuid(),
             };
 
             var fakeUser2 = new Model.User()
@@ -39,7 +39,7 @@ namespace EndpointsMonitoringService.UnitTests
                 Id = 2,
                 UserName = "test2",
                 Email = "test2@test.com",
-                AccessToken = "5678-efgh",
+                AccessToken = Guid.NewGuid(),
             };
 
             owner.RegisterOwner(fakeUser1);

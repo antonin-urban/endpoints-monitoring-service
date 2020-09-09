@@ -25,7 +25,7 @@ namespace EndpointsMonitoringService.Model
                 {
                     UserName = "Applifting",
                     Email = "info@applifting.cz",
-                    AccessToken = "93f39e2f-80de-4033-99ee-249d92736a25"
+                    AccessToken = Guid.Parse("93f39e2f-80de-4033-99ee-249d92736a25")
                 };
 
                 if (!_databaseContext.User.Any(
@@ -42,7 +42,7 @@ namespace EndpointsMonitoringService.Model
                 {
                     UserName = "Batman",
                     Email = "b​atman@example.com",
-                    AccessToken = "dcb20f8a-5657-4f1b-9f7f-ce65739b359e"
+                    AccessToken = Guid.Parse("dcb20f8a-5657-4f1b-9f7f-ce65739b359e")
                 };
 
                 if (!_databaseContext.User.Any(

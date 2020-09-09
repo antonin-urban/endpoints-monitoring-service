@@ -59,7 +59,7 @@ namespace EndpointsMonitoringService.Handlers
                     return AuthenticateResult.Fail(_failureMessage);
                 }
 
-                var accessToken = authorization.Parameter;
+                var accessToken = Guid.Parse(authorization.Parameter);
 
                 var foundUser = _databaseContext.User.SingleOrDefault(x => x.AccessToken == accessToken);
 

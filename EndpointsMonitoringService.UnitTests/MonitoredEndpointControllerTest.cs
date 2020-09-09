@@ -17,6 +17,7 @@ using System.Linq;
 using EndpointsMonitoringService.Controllers;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
+using System.Collections.Generic;
 
 namespace EndpointsMonitoringService.UnitTests
 {
@@ -29,32 +30,21 @@ namespace EndpointsMonitoringService.UnitTests
             //ARANGE
             var fakeLoggerFactory = new NullLoggerFactory();
             var options = new DbContextOptionsBuilder<DatabaseContext>().
-                UseInMemoryDatabase(DateTime.Now.ToString("HHmmssffffzzz")).Options;
+                UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
             var owner = new Owner();
 
-            var fakeUser = new Model.User()
-            {
-                Id = 1,
-                UserName = "test",
-                Email = "test@test.com",
-                AccessToken = Guid.NewGuid(),
-            };
+            var fakeUsersList = FakeDataGenerator.GenerateUsers(2);
 
-            owner.RegisterOwner(fakeUser);
-            var fakeEndpoint = new MonitoredEndpoint()
-            {
-                Id = 1,
-                Name = "test",
-                Url = "www.test.cz",
-                DateOfCreation = DateTime.Now,
-                UserForeignKey = 1,
-                Owner = fakeUser,
-            };
+            owner.RegisterOwner(fakeUsersList[0]);
+            var fakeEndpoint1 = FakeDataGenerator.GenerateEndpoint(1,owner.Data).Single();
+            var fakeEndpoint2 = FakeDataGenerator.GenerateEndpoint(1,fakeUsersList[1],2).Single();
+
 
             using (var context = new DatabaseContext(options, fakeLoggerFactory))
             {
-                context.Add(fakeUser);
-                context.Add(fakeEndpoint);
+                context.User.AddRange(fakeUsersList);
+                context.Add(fakeEndpoint1);
+                context.Add(fakeEndpoint2);
                 context.SaveChanges();
 
                 var fakeHttpContext = new Mock<HttpContext>();
@@ -74,7 +64,7 @@ namespace EndpointsMonitoringService.UnitTests
                 Assert.NotNull(controllerResult);
                 Assert.NotNull(controllerResult.Value);
                 Assert.IsType<MonitoredEndpoint>(controllerResult.Value);
-                Assert.Equal(fakeEndpoint, controllerResult.Value);
+                Assert.Equal(fakeEndpoint1, controllerResult.Value);
                 context.Database.EnsureDeleted();
             }
         }
@@ -89,39 +79,19 @@ namespace EndpointsMonitoringService.UnitTests
 
             var owner = new Owner();
 
-            var fakeUser1 = new Model.User()
-            {
-                Id = 1,
-                UserName = "test",
-                Email = "test@test.com",
-                AccessToken = Guid.NewGuid(),
-            };
+            var fakeUsersList = FakeDataGenerator.GenerateUsers(2);
 
-            var fakeUser2 = new Model.User()
-            {
-                Id = 2,
-                UserName = "test2",
-                Email = "test2@test.com",
-                AccessToken = Guid.NewGuid(),
-            };
+            owner.RegisterOwner(fakeUsersList[1]);
 
-            owner.RegisterOwner(fakeUser2);
-
-            var fakeEndpoint = new MonitoredEndpoint()
-            {
-                Id = 1,
-                Name = "test",
-                Url = "www.test.cz",
-                DateOfCreation = DateTime.Now,
-                UserForeignKey = 1,
-                Owner = fakeUser1,
-            };
+            var fakeMonitoredEndpointList = new List<MonitoredEndpoint>();
+            fakeMonitoredEndpointList.AddRange(FakeDataGenerator.GenerateEndpoint(1, fakeUsersList[0]));
+            fakeMonitoredEndpointList.AddRange(FakeDataGenerator.GenerateEndpoint(1, fakeUsersList[1],2));
+            int idToGet = fakeMonitoredEndpointList.First(x => x.UserForeignKey != owner.Data.Id).Id;
 
             using (var context = new DatabaseContext(options, fakeLoggerFactory))
             {
-                context.Add(fakeUser1);
-                context.Add(fakeUser2);
-                context.Add(fakeEndpoint);
+                context.User.AddRange(fakeUsersList);
+                context.MonitoredEndpoint.AddRange(fakeMonitoredEndpointList);
                 context.SaveChanges();
 
                 var fakeHttpContext = new Mock<HttpContext>();
@@ -135,7 +105,7 @@ namespace EndpointsMonitoringService.UnitTests
 
                 //ACT
                 var monitoredEndpointController = new MonitoredEndpointController(owner, context, fakeLoggerFactory);
-                var controllerResult = monitoredEndpointController.GetMonitoredEndpoint(1).Result;
+                var controllerResult = monitoredEndpointController.GetMonitoredEndpoint(idToGet).Result;
 
                 //ASSERT
                 Assert.Null(controllerResult.Value); ;

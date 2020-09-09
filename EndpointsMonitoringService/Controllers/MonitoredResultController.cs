@@ -37,14 +37,14 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResult()
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult");
             var ednpointsIds = await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).Select(x => x.Id).ToListAsync();
 
             var result = new List<MonitoringResult>();
 
             foreach (var endpointId in ednpointsIds)
             {
-                result.AddRange(_context.MonitoringResult.Where(x => x.MonitoredEndpoint.Id == endpointId).OrderBy(x => x.Id).ToList().TakeLast(10));
+                var last10 = await _context.MonitoringResult.Where(x => x.MonitoredEndpoint.Id == endpointId).OrderByDescending(x => x.DateOfCheck).Take(10).ToListAsync();
+                result.AddRange(last10);
             }
             return result;
         }
@@ -53,7 +53,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MonitoringResult>> GetMonitoringResult(long id)
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult/id");
             var monitoringResult = await _context.MonitoringResult.FindAsync(id);
 
             if (monitoringResult == null)
@@ -61,7 +60,9 @@ namespace EndpointsMonitoringService.Controllers
                 return NotFound();
             }
 
-            if (!OwnerTest(monitoringResult))
+            var ownerTestResult = await OwnerTestAsync(monitoringResult);
+
+            if (!ownerTestResult)
             {
                 return Unauthorized(_UNAUTHORIZED_MSG);
             }
@@ -73,7 +74,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("ForEndpoint/{id}")]
         public async Task<ActionResult<IEnumerable<MonitoringResult>>> GetMonitoringResultForEndopoint(int id)
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredResult/ForEndpoind/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
             if (monitoredEndpoint == null)
@@ -86,20 +86,17 @@ namespace EndpointsMonitoringService.Controllers
                 return Unauthorized(_UNAUTHORIZED_MSG);
             }
 
-            return _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == monitoredEndpoint.Id).OrderBy(x => x.Id).ToList().TakeLast(10).ToList();
-            //when the first .ToList() is missing before .TakeLast(10), EF is throwing exception (TakeLast() probably unsuported in EF):
-            //        System.InvalidOperationException: Processing of the LINQ expression 'DbSet<MonitoringResult>
-            //.Where(x => x.MonitoredEndpointForeignKey == __id_0)
-            //.OrderByDescending(x => x.DateOfCheck)
-            //.TakeLast(__p_1)' by 'NavigationExpandingExpressionVisitor' failed. This may indicate either a bug or a limitation in EF Core. See https://go.microsoft.com/fwlink/?linkid=2101433 for more detailed information.
+            var results = await GetTenLastResultsForEndpointAsync(monitoredEndpoint);
+            return results;
+
         }
 
-        private bool OwnerTest(MonitoringResult monitoringResult)
+        private async Task<bool> OwnerTestAsync(MonitoringResult monitoringResult)
         {
             try
             {
-                var resultOwnerId = _context.MonitoredEndpoint.FirstOrDefaultAsync(x => x.Id == monitoringResult.MonitoredEndpointForeignKey).Id;
-                if (resultOwnerId != _owner.Data.Id)
+                var resultOwner = await _context.MonitoredEndpoint.FirstOrDefaultAsync(x => x.Id == monitoringResult.MonitoredEndpointForeignKey);
+                if (resultOwner.Id != _owner.Data.Id)
                 {
                     return false;
                 }
@@ -110,6 +107,12 @@ namespace EndpointsMonitoringService.Controllers
                 _logger.LogError("ERROR RESOLVING OWNER", ex);
                 throw ex;
             }
+        }
+
+        private async Task<List<MonitoringResult>> GetTenLastResultsForEndpointAsync(MonitoredEndpoint endpoint)
+        {
+            var result = await _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == endpoint.Id).OrderByDescending(x => x.DateOfCheck).Take(10).ToListAsync();
+            return result;
         }
 
     }

@@ -35,7 +35,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MonitoredEndpoint>>> GetMonitoredEndpoint()
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredEndpoint");
             return await _context.MonitoredEndpoint.Where(x => x.Owner == _owner.Data).ToListAsync();
         }
 
@@ -43,7 +42,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MonitoredEndpoint>> GetMonitoredEndpoint(int id)
         {
-            _logger.LogInformation("ROUTE: GET api/MonitoredEndpoint/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
 
             if (monitoredEndpoint == null)
@@ -63,7 +61,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMonitoredEndpoint(int id, [FromBody] MonitoredEndpoint monitoredEndpoint)
         {
-            _logger.LogInformation("ROUTE: PUT api/MonitoredEndpoint/id");
             monitoredEndpoint = CleanDeserializedMonitoredEndpoint(monitoredEndpoint);
 
             var endpointToUpdate = await _context.MonitoredEndpoint.FindAsync(id);
@@ -89,7 +86,9 @@ namespace EndpointsMonitoringService.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MonitoredEndpointExists(id))
+                var endpointExistsTest = await MonitoredEndpointExists(id);
+
+                if (endpointExistsTest)
                 {
                     return NotFound();
                 }
@@ -106,7 +105,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpPost]
         public async Task<ActionResult<MonitoredEndpoint>> PostMonitoredEndpoint([FromBody] MonitoredEndpoint monitoredEndpoint)
         {
-            _logger.LogInformation("ROUTE: POST api/MonitoredEndpoint");
             monitoredEndpoint = CleanDeserializedMonitoredEndpoint(monitoredEndpoint);
 
             monitoredEndpoint.Owner = _owner.Data;
@@ -121,7 +119,6 @@ namespace EndpointsMonitoringService.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<MonitoredEndpoint>> DeleteMonitoredEndpoint(int id)
         {
-            _logger.LogInformation("ROUTE: DELETE api/MonitoredEndpoint/id");
             var monitoredEndpoint = await _context.MonitoredEndpoint.FindAsync(id);
             if (monitoredEndpoint == null)
             {
@@ -139,9 +136,9 @@ namespace EndpointsMonitoringService.Controllers
             return monitoredEndpoint;
         }
 
-        private bool MonitoredEndpointExists(int id)
+        private Task<bool> MonitoredEndpointExists(int id)
         {
-            return _context.MonitoredEndpoint.Any(e => e.Id == id);
+            return _context.MonitoredEndpoint.AnyAsync(e => e.Id == id);
         }
 
         private MonitoredEndpoint CleanDeserializedMonitoredEndpoint(MonitoredEndpoint deserializedMonitoredEndpoint)

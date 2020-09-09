@@ -53,8 +53,8 @@ namespace EndpointsMonitoringService
                 })
             .ConfigureServices(services =>
                 {
-                    services.AddHostedService<MonitoringWorker>();
-                    services.AddHttpClient();
-                });
+            services.AddHostedService<MonitoringWorker>();
+            services.AddHttpClient();
+        });
     }
 }

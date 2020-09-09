@@ -43,7 +43,8 @@ namespace EndpointsMonitoringService.Controllers
 
             foreach (var endpointId in ednpointsIds)
             {
-                result.AddRange(_context.MonitoringResult.Where(x => x.MonitoredEndpoint.Id == endpointId).OrderBy(x => x.Id).ToList().TakeLast(10));
+                var last10 = await _context.MonitoringResult.Where(x => x.MonitoredEndpoint.Id == endpointId).OrderByDescending(x => x.DateOfCheck).Take(10).ToListAsync();
+                result.AddRange(last10);
             }
             return result;
         }
@@ -85,15 +86,9 @@ namespace EndpointsMonitoringService.Controllers
                 return Unauthorized(_UNAUTHORIZED_MSG);
             }
 
-            // .TakeLast(10) in EF is throwing exception (TakeLast() probably unsuported in EF):
-            //        System.InvalidOperationException: Processing of the LINQ expression 'DbSet<MonitoringResult>
-            //.Where(x => x.MonitoredEndpointForeignKey == __id_0)
-            //.OrderByDescending(x => x.DateOfCheck)
-            //.TakeLast(__p_1)' by 'NavigationExpandingExpressionVisitor' failed. This may indicate either a bug or a limitation in EF Core. See https://go.microsoft.com/fwlink/?linkid=2101433 for more detailed information.
-
             var results = await GetTenLastResultsForEndpointAsync(monitoredEndpoint);
             return results;
-            
+
         }
 
         private async Task<bool> OwnerTestAsync(MonitoringResult monitoringResult)
@@ -116,8 +111,7 @@ namespace EndpointsMonitoringService.Controllers
 
         private async Task<List<MonitoringResult>> GetTenLastResultsForEndpointAsync(MonitoredEndpoint endpoint)
         {
-            var query = String.Format("SELECT * FROM monitoring_result WHERE fk_monitored_endpoint = {0} ORDER BY date_of_check DESC LIMIT 10", endpoint.Id);
-            var result = await _context.MonitoringResult.FromSqlRaw<MonitoringResult>(query).ToListAsync();
+            var result = await _context.MonitoringResult.Where(x => x.MonitoredEndpointForeignKey == endpoint.Id).OrderByDescending(x => x.DateOfCheck).Take(10).ToListAsync();
             return result;
         }
 

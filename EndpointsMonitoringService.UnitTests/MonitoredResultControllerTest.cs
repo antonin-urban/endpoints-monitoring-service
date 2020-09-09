@@ -77,12 +77,14 @@ namespace EndpointsMonitoringService.UnitTests
 
                 for (int i = 1; i < 12; i++) //seed 11
                 {
+                    System.Threading.Thread.Sleep(1000); //to make difference in DateOfCheck
                     var monitoringResult = new MonitoringResult()
                     {
                         Id = i,
                         MonitoredEndpoint = fakeEndpoint1,
                         ReturnedHttpStatusCode = 0,
                         ReturnedPayload = string.Empty,
+                        DateOfCheck = DateTime.Now,
                     };
                     context.Add(monitoringResult);
 
@@ -100,6 +102,7 @@ namespace EndpointsMonitoringService.UnitTests
                         MonitoredEndpoint = fakeEndpoint2,
                         ReturnedHttpStatusCode = 0,
                         ReturnedPayload = string.Empty,
+                        DateOfCheck = DateTime.Now
                     };
                     context.Add(monitoringResult);
                 }
@@ -122,7 +125,10 @@ namespace EndpointsMonitoringService.UnitTests
                 //ASSERT
                 Assert.NotNull(controllerResult);
                 Assert.NotNull(controllerResult.Value);
-                Assert.Equal(expectedCollection, controllerResult.Value);
+
+                var resutlCollectionOrdered = controllerResult.Value.OrderBy(x => x.DateOfCheck).ToList();
+
+                Assert.Equal(expectedCollection,resutlCollectionOrdered);
                 context.Database.EnsureDeleted();
             }
         }

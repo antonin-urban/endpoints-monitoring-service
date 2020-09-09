@@ -51,24 +51,22 @@ namespace EndpointsMonitoringService.Services
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                endpoints = dbContext.MonitoredEndpoint.ToList();
+                endpoints = await dbContext.MonitoredEndpoint.ToListAsync();
             }
 
             foreach (var endpoint in endpoints)
             {
-                var timestamp = DateTime.Now;
-                if (endpoint.DateOfLastCheck != default)
+                var timeStamp = DateTime.Now;
+
+                if (!TimeTest(endpoint, timeStamp))
                 {
-                    var targetTime = endpoint.DateOfLastCheck.AddSeconds(endpoint.MonitoredInterval);
-                    if (targetTime > timestamp)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
-                endpoint.DateOfLastCheck = timestamp;
+                endpoint.DateOfLastCheck = timeStamp;
+
                 MonitoringResult result = new MonitoringResult();
-                result.DateOfCheck = timestamp;
+                result.DateOfCheck = timeStamp;
                 result.MonitoredEndpoint = endpoint;
 
                 try
@@ -79,26 +77,9 @@ namespace EndpointsMonitoringService.Services
                     try
                     {
                         var response = await client.SendAsync(request);
-                        int statusCodeInt = default;
-                        int.TryParse(response.StatusCode.ToString(), out statusCodeInt);
-                        result.ReturnedHttpStatusCode = statusCodeInt;
+                        int statusCodeInt = ResolveStatusCode(response);
+                        result.ReturnedPayload = await ExtractPayloadAsync(response);
 
-                        if (response.Content != null)
-                        {
-                            try
-                            {
-                                using var responseString = response.Content.ReadAsStringAsync();
-                                result.ReturnedPayload = MySql.Data.MySqlClient.MySqlHelper.EscapeString(responseString.Result);
-                                if (result.ReturnedPayload.Length > 20000)
-                                {
-                                    result.ReturnedPayload = result.ReturnedPayload.Substring(0, 20000).ToString();
-                                };
-                            }
-                            catch (Exception exx)
-                            {
-                                result.ReturnedPayload = "ERROR READING RETURNED PAYLOAD AS STRING: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(exx.Message);
-                            }
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -110,20 +91,7 @@ namespace EndpointsMonitoringService.Services
                     Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SENDING REQUEST TO ENDPOINT ID {0}", endpoint.Id));
                 }
 
-                try
-                {
-                    using (var scope = _scopeFactory.CreateScope())
-                    {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-                        dbContext.MonitoredEndpoint.Update(endpoint);
-                        dbContext.MonitoringResult.Add(result);
-                        await dbContext.SaveChangesAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
-                }
+                await SaveMonitoringResultAsync(endpoint, result);
             }
         }
 
@@ -138,6 +106,78 @@ namespace EndpointsMonitoringService.Services
         public void Dispose()
         {
             _timer?.Dispose();
+        }
+
+        private bool TimeTest(MonitoredEndpoint endpoint, DateTime timeStamp)
+        {
+            var result = true;
+            if (endpoint.DateOfLastCheck != default)
+            {
+                var targetTime = endpoint.DateOfLastCheck.AddSeconds(endpoint.MonitoredInterval);
+                if (targetTime > timeStamp)
+                {
+                    result = false;
+                }
+            }
+            return result;
+        }
+
+        private async Task<bool> SaveMonitoringResultAsync(MonitoredEndpoint endpoint, MonitoringResult monitoringResult)
+        {
+            var result = false;
+
+            try
+            {
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                    dbContext.MonitoredEndpoint.Update(endpoint);
+                    dbContext.MonitoringResult.Add(monitoringResult);
+                    await dbContext.SaveChangesAsync();
+                    result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.ForContext(typeof(MonitoringWorker)).Error(ex, String.Format("ERROR SAVING CHANGES TO DB FOR ENDPOINT ID {0}", endpoint.Id));
+            }
+            return result;
+        }
+
+        private async Task<string> ExtractPayloadAsync(HttpResponseMessage response)
+        {
+            string payload;
+
+            if (response.Content == null)
+            {
+                return default;
+            }
+
+            try
+            {
+                payload = await response.Content.ReadAsStringAsync();
+
+                MySql.Data.MySqlClient.MySqlHelper.EscapeString(payload);
+                if (payload.Length > 20000)
+                {
+                    payload = payload.Substring(0, 20000).ToString();
+                };
+
+                return payload;
+            }
+            catch (Exception exx)
+            {
+                payload = "ERROR READING RETURNED PAYLOAD AS STRING: " + MySql.Data.MySqlClient.MySqlHelper.EscapeString(exx.Message);
+            }
+
+            return payload;
+        }
+
+        private int ResolveStatusCode(HttpResponseMessage response)
+        {
+            int statusCodeInt = default;
+            int.TryParse(response.StatusCode.ToString(), out statusCodeInt);
+            return statusCodeInt;
         }
     }
 }
